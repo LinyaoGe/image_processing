@@ -25,21 +25,24 @@ for step = 1:10
     div_bita = divergence(Bx,By);
     F = f - (mu*div_w + div_bita);
     u = f;
-    %处理边界
-    u = border(u);
-    Gx = mu*Wx + Bx;
-    Gy = mu*Wy + Bx;
-    u = boundary(u,Gx,Gy);
-    %图像内部
-    for i = 2:257
-        for j = 2:257
-             u(i,j) = (F(i-1,j-1) + mu * (u(i-1,j) + u(i,j-1) + u(i+1,j) + u(i,j+1))) / (1 + 4*mu);
-        end
-    end
-    
-    %取图
-    u = get_image(u);
-    
+    %离散方法
+%     %利用padarray增加边界
+%     u = padarray(u,[1,1],'replicate');
+%     Gx = mu*Wx + Bx;
+%     Gy = mu*Wy + Bx;
+%     u = boundary(u,Gx,Gy);
+%     %图像内部
+%     for i = 2:257
+%         for j = 2:257
+%              u(i,j) = (F(i-1,j-1) + mu * (u(i-1,j) + u(i,j-1) + u(i+1,j) + u(i,j+1))) / (1 + 4*mu);
+%         end
+%     end
+%     %取图
+%     [M,N] = size(u);
+%     u = u(2:M-1,2:N-1);
+    %矩阵方法
+    u = fourpoint(u);
+    u = (F + mu*u) ./ (1 + 4*mu);
     %第二步迭代W
     [ux,uy] = gradient(u);
     abs_u = sqrt(ux.^2 + uy.^2);
