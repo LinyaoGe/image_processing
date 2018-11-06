@@ -57,7 +57,7 @@ for step = 1:10
     %ÅĞ¶ÏÖÕÖ¹Ìõ¼ş
     E(step)=sum(sum(lamda.*abs_u+0.5.*(u-f).^2));
     if (step>2)
-        if abs((E(step)-E(step-1))/E(step))<0.000000001
+        if abs((E(step)-E(step-1))/E(step))<0.00001
             fprintf('step:%d',step);
             break;
         end
