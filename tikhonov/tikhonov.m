@@ -18,7 +18,7 @@ for step = 1:200
     u = center_diff(u);
     u = (f + lamda/h^2*u) / (1+4*lamda/h^2);    
     [Fx,Fy] = gradient(u);
-    E(step) = sum(0.5 * sum((u-f).^2) - 0.5*lamda*sum(Fx.^2 + Fy.^2));
+    E(step) = sum(0.5 * sum((u-f).^2) + 0.5*lamda*sum(Fx.^2 + Fy.^2));
     if step > 2
         if abs((E(step)-E(step-1))/E(step)) < 0.01
             break;
