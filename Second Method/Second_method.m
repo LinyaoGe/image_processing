@@ -5,7 +5,7 @@ imshow(image);
 image = double(image);
 
 %参数设置
-lamda = 30;
+lamda = 25;
 [M,N] = size(image);
 bita1X = zeros(M,N);
 bita1Y = zeros(M,N);
@@ -13,51 +13,52 @@ bita2 = zeros(M,N);
 Wx = zeros(M,N);
 Wy = zeros(M,N);
 V = zeros(M,N);
-s = 256*256;arf = 0.000003;arf2 = 0.01;
-mu1 = s*arf;
-mu2 = s*arf2;
+% fai = v.^2;
+% div_fai = 2.*v;
+mu = 0.5;
 u = image;
 
 
 for step = 1:100
     %处理u的
     W = divergence(Wx,Wy);
-    thita1 = divergence(bita1X,bita1Y);
-    F1 = image - mu1*W - thita1;
+    div_bita1 = divergence(bita1X,bita1Y);
+    [Ux,Uy]=gradient(u);
+    
+    %更新bita
+    bita1X = bita1X + mu*(W - Ux);
+    bita1Y = bita1Y + mu*(W - Uy);
+    bita2 = bita2 + mu*(V - W);
+    
+    F1 = image - mu*W - div_bita1;
     u = center_diff(u);
-    u = (F1 + mu1*u)./(1+4*mu1);
+    u = (F1 + mu*u)./(1+4*mu);
     
     %对新的u求梯度
     [Ux,Uy] = gradient(u);
     [Vx,Vy] = gradient(V);
     [B2x,B2y] = gradient(bita2);
-    F2x = -mu1*Ux + bita1X + mu2*Vx + B2x;
-    F2y = -mu2*Uy + bita1Y + mu2*Vy + B2y;
+    F2x = -mu*Ux + bita1X + mu*Vx + B2x;
+    F2y = -mu*Uy + bita1Y + mu*Vy + B2y;
     
-    Wx = padarray(Wx,[1,1],'replicate');
-    Wy = padarray(Wy,[1,1],'replicate');
-    %更新W
-    for i = 2:257
-        for j = 2:257
-            Wx(i,j) = mu2 * (Wx(i+1,j) - Wx(i,j) - Wx(i+1,j+1) - Wx(i,j-1) + Wy(i,j+1) + Wy(i,j-1) - 2*Wy(i,j));
-            Wy(i,j) = mu2 * (Wy(i,j+1) - Wy(i,j) - Wy(i-1,j+1) - Wy(i-1,j) + Wx(i+1,j) + Wx(i-1,j) - 2*Wx(i,j));
-        end
-    end
-    Wx = Wx(2:257,2:257);
-    Wy = Wy(2:257,2:257);
+    %对W
+    AW1 = center_diff(Wx);
+    AW2 = center_diff(Wy);
+    Wx = (mu*AW1 - F2x) ./ (5*mu);
+    Wy = (mu*AW2 - F2y) ./ (5*mu);
     
     %更新V
     W = divergence(Wx,Wy);
-    V = max(abs(W - bita2/mu2) - ((-bita2)/mu2 - (V - W)*abs(V)/V),0)*(W - bita2*mu2) / abs(W - bita2*mu2);
-    
-    %更新bita
-    bita1X = bita1X + mu1*(W - Ux);
-    bita1Y = bita1Y + mu1*(W - Uy);
-    bita2 = bita2 + mu2*(V - W);
+    V = max(abs(W - bita2/mu) - lamda/mu,0) .* (W - bita2*mu) ./ abs(W - bita2*mu);
+%     V =  max(abs(W - bita2/mu) - lamda.*div_fai/mu,0) .* (W - bita2*mu) ./ abs(W - bita2*mu);
+%     [f1 f2 Af2]=grad(fai);
+%     abs_fai=sqrt(f1.^2+f2.^2);
+%     E(step)=sum(sum(lamda.*abs_fai+0.5.*(u-image).^2));    
     u2 = divergence(Ux,Uy);
+%     E(step)=0.5*sum(sum((u-image).^2))+lamda*sum(sum(Ux.^2+Uy.^2));
     E(step) = sum(lamda*sum(abs(u2)) + 0.5*sum(u-image).^2);
     if step > 2
-        abs(E(step) - E(step-1) / E(step-1)) < 0.0000000001;
+        abs(E(step) - E(step-1) / E(step)) < 0.001;
         break;
     end
 end
