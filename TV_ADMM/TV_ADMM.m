@@ -4,7 +4,7 @@ Image = imread('lena.jpg');
 
 %给图像加噪声
 f = imnoise(Image,'gauss');
-subplot(1,2,1)
+subplot(2,2,1)
 imshow(f);
 hold on;
 f = double(f);
@@ -18,13 +18,13 @@ mu = s*arf;
 u = zeros(M,N);
 [Wx,Wy] = gradient(u);
 [Bx,By] = gradient(u);
+u = f;
 
 for step = 1:10
     %第一步
     div_w = divergence(Wx,Wy);
     div_bita = divergence(Bx,By);
     F = f - (mu*div_w + div_bita);
-    u = f;
     %离散方法
 %     %利用padarray增加边界
 %     u = padarray(u,[1,1],'replicate');
@@ -64,9 +64,9 @@ for step = 1:10
     end
 end
 
-subplot(1,2,2);
-imshow(uint8(u));
-
+subplot(2,2,3);imshow(uint8(u));title('result');
+subplot(2,2,4);plot(E);xlabel('Iterations');ylabel('Energy');legend('Energy/Iterations');
+PSNR=psnr(u,f)
 
 
 
