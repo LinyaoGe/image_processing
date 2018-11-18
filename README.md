@@ -1,1 +1,1 @@
-# image_processing
+image deniosing using variational method
